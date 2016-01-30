@@ -5,9 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.RemoteViews;
 
 import java.util.ArrayList;
@@ -24,11 +24,11 @@ import it.niedermann.owncloud.notes.persistence.NoteSQLiteOpenHelper;
  * Configuration Activity to select a single note which should be displayed in the SingleNoteWidget
  * Created by stefan on 08.10.15.
  */
-public class SelectSingleNoteActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
+public class SelectSingleNoteActivity extends AppCompatActivity implements ItemAdapter.NoteClickListener {
 
     int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private NoteSQLiteOpenHelper db = null;
-    private ListView listView = null;
+    private RecyclerView listView = null;
     private ItemAdapter adapter = null;
 
     @Override
@@ -64,15 +64,15 @@ public class SelectSingleNoteActivity extends AppCompatActivity implements Adapt
     private void setListView(List<Note> noteList) {
         List<Item> itemList = new ArrayList<>();
         itemList.addAll(noteList);
-        adapter = new ItemAdapter(getApplicationContext(), itemList);
-        listView = (ListView) findViewById(R.id.select_single_note_list_view);
-        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        adapter = new ItemAdapter(itemList);
+        listView = (RecyclerView) findViewById(R.id.select_single_note_list_view);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(this);
+        listView.setLayoutManager(new LinearLayoutManager(this));
+        ItemAdapter.setNoteClickListener(this);
     }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    public void onNoteClick(int position, View v) {
         final Context context = SelectSingleNoteActivity.this;
 
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
@@ -85,5 +85,10 @@ public class SelectSingleNoteActivity extends AppCompatActivity implements Adapt
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         setResult(RESULT_OK, resultValue);
         finish();
+    }
+
+    @Override
+    public boolean onNoteLongClick(int position, View v) {
+        return false;
     }
 }
